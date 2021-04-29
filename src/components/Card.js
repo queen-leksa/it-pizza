@@ -5,18 +5,13 @@ const CardContext = React.createContext();
 class CardText extends React.Component {
     render() {
         return <div className="card-text">
-            <CardContext.Consumer> {
-                (context) => {
-                    console.log(context);
-                    return (
-                        <React.Fragment>
-                            {context.state.name}
-                            <button onClick={context.updateActive}>Change</button>
-                        </React.Fragment>
-                    )
-                }
-            }
-
+            <CardContext.Consumer> 
+                {(context) => {
+                    return <React.Fragment> 
+                        {context.state.name}
+                        <button onClick={context.updateActive}>Change</button>
+                    </React.Fragment>
+                }}
             </CardContext.Consumer>
         </div>
     }
@@ -24,9 +19,15 @@ class CardText extends React.Component {
 
 class CardChange extends React.Component {
     render() {
-        return <div className="card-change">
-            <input type="text"/>
-        </div>
+        return (
+            <CardContext.Consumer>
+                {(context) => {
+                    if (context.state.changeActive) {
+                        return <input type="text" defaultValue={context.state.name} onChange={context.updateName}/>
+                    }
+                }}
+            </CardContext.Consumer>
+        )
     }
 }
 
@@ -35,24 +36,31 @@ export default class Card extends React.Component {
         super(props);
         this.state = {
             name: "Маргарита",
-            changeActive: false
+            changeActive: false,
+            input: null
         }
     }
     render() {
-        return (
-            <CardContext.Provider value={{
-                state: this.state,
-                updateName: (name) => {
+        let ctx = {
+            state: this.state,
+            updateName: (e) => {
+                this.setState({
+                    input: e.target.value
+                });
+            },
+            updateActive: () => {
+                if (this.state.changeActive) {
                     this.setState({
-                        name: name
+                        name: this.state.input
                     });
-                },
-                updateActive: () => {
-                    this.setState({
-                        changeActive: !this.state.changeActive
-                    })
                 }
-            }}>
+                this.setState({
+                    changeActive: !this.state.changeActive
+                });
+            }
+        }
+        return (
+            <CardContext.Provider value={ctx}>
                 <div>
                     <h2>Pizza</h2>
                     <CardText/>
